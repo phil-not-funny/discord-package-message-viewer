@@ -1,14 +1,14 @@
-import { Spinner } from "@nextui-org/spinner";
-import React from "react";
+"use client"
 
-export interface Props {
-  enabled: boolean;
-  label: string;
-}
+import React, { useContext } from "react";
+import { AppContext } from "./AppProvider";
 
-export const Loading: React.FC<Props> = ({ enabled, label }) => {
-  return enabled ? (
-    <div className="absolute top-0 w-screen h-screen bg-blue-600 bg-opacity-15 z-10 flex flex-col items-center justify-center">
+export const Loading: React.FC = () => {
+  const { loading } = useContext(AppContext);
+  const { loadingLabel } = useContext(AppContext);
+
+  return loading ? (
+    <div className="absolute top-0 w-screen h-screen bg-blue-100 bg-opacity-15 z-10 flex flex-col items-center justify-center">
       <svg
         aria-hidden="true"
         className="w-12 h-12 text-transparent animate-spin fill-blue-600"
@@ -25,11 +25,9 @@ export const Loading: React.FC<Props> = ({ enabled, label }) => {
           fill="currentFill"
         />
       </svg>
-      <h1 className="font-semibold text-2xl">{label}</h1>
+      <h1 className="font-semibold text-2xl">{loadingLabel}</h1>
     </div>
-  ) : (
-    <></>
-  );
+  ) : null;
 };
 
 export default Loading;

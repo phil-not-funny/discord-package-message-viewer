@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AppProvider } from "@/components/AppProvider";
+import Loading from "@/components/Loading";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,9 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased relative bg-cyan-950 text-white min-h-screen`}
+        className={`font-discord antialiased relative bg-cyan-950 text-white min-h-screen `}
       >
-        {children}
+        <AppProvider>
+          <Loading />
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

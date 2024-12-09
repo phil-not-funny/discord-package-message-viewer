@@ -1,11 +1,16 @@
 "use client";
-import React, { useState } from "react";
-import Loading from "./Loading";
+
+import React, { useContext, useState } from "react";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
+import { AppContext } from "./AppProvider";
 
 const ZipUploader: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState<boolean>(false);
+  const { setLoading } = useContext(AppContext);
+  const [status, setStatus] = useState<{
+    type: "error" | "success";
+    message: string;
+  }>({ type: "success", message: "" });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -21,57 +26,79 @@ const ZipUploader: React.FC = () => {
     formData.append("file", file);
 
     try {
-      setUploading(true);
+      setLoading(true);
+      setStatus({ type: "success", message: "" });
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-      setUploading(false);
+      setLoading(false);
+
       const data = await response.json();
       if (response.ok) {
-        alert("File uploaded successfully");
+        setStatus({ type: "success", message: "File uploaded successfully" });
       } else {
-        alert(`File upload failed: ${data.error}`);
+        setStatus({
+          type: "error",
+          message: data.error || "An error occurred while uploading the file",
+        });
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("File upload failed");
+      setStatus({
+        type: "error",
+        message: "An error occurred while uploading the file",
+      });
     }
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="flex flex-col items-center">
-        <div
-          className="p-5 border border-dashed flex items-center justify-center rounded"
-          onDrop={(e) => {
-            e.preventDefault();
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-              setFile(e.dataTransfer.files[0]);
-            }
-          }}
-          onDragOver={(e) => e.preventDefault()}
+    <form onSubmit={handleSubmit} className="flex flex-col items-center">
+      <div
+        className="p-5 border border-dashed flex items-center justify-center rounded"
+        onDrop={(e) => {
+          e.preventDefault();
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            setFile(e.dataTransfer.files[0]);
+          }
+        }}
+        onDragOver={(e) => e.preventDefault()}
+      >
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+        />
+        <label
+          htmlFor="file-upload"
+          className="cursor-pointer flex flex-col items-center"
         >
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-          />
-          <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
-            <ArrowUpTrayIcon className="w-12 h-12" />
-            <span className="font-thin text-gray-300 tracking-wide italic">{file ? "Uploaded: " + file.name : "Drag and drop a file here or click to upload"}</span>
-          </label>
-        </div>
-        <button
-          type="submit"
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-        >
-          Upload
-        </button>
-      </form>
-      <Loading label="Uploading..." enabled={uploading} />
-    </>
+          <ArrowUpTrayIcon className="w-12 h-12" />
+          <span className="font-thin text-gray-300 tracking-wide italic">
+            {file
+              ? "Uploaded: " + file.name
+              : "Drag and drop a file here or click to upload"}
+          </span>
+        </label>
+      </div>
+      <h6
+        className={`text-lg text-center ${
+          status.type === "error"
+            ? "text-red-500"
+            : status.type === "success"
+            ? "text-green-500"
+            : ""
+        }`}
+      >
+        {status.message}
+      </h6>
+      <button
+        type="submit"
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+      >
+        Upload
+      </button>
+    </form>
   );
 };
 
