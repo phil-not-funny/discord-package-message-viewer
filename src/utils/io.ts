@@ -1,6 +1,6 @@
 import unzipper from "unzipper";
 import fs from "fs";
-import { DiscordUser } from "@/types/discord";
+import { DiscordMessage, DiscordServer, DiscordTextChannel, DiscordUser, PackageViewerChannel } from "@/types/discord";
 import path from "path";
 import { BACKEND } from "./logging";
 
@@ -28,10 +28,42 @@ export async function readUserJson(url: string, folderName: string): Promise<Dis
         return reject(error);
       }
       const obj: any = JSON.parse(data.toString());
-      BACKEND.info(`Avatar Path: ${path.join(url.substring(url.indexOf("public")), "avatar.png")}`);
-      
       const user: DiscordUser = { username: obj.username, global_name: obj.global_name, id: obj.id, uploadFolder: folderName };
       return resolve(user);
+    });
+  });
+}
+
+export async function readChannelsJson(uploadId: string): Promise<PackageViewerChannel[]> {
+  return await new Promise((resolve, reject) => {
+    fs.readFile(path.join(process.cwd(), "uploads", uploadId, "messages", "index.json"), (error, channelsData) => { // GET ALL CHANNEL INDEXES
+      if (error) {
+        return reject(error);
+      }
+      const channelsMap: Object = JSON.parse(channelsData.toString());
+      let channels: PackageViewerChannel[] = [];
+
+      Object.entries(channelsMap).forEach(([id, name]) => {
+        fs.readFile(path.join(process.cwd(), "uploads", uploadId, "messages", "c" + id, "channel.json"), (error, channelIdxData) => { // FETCH ALL CHANNEL DATA
+          if (error) {
+            return reject(error);
+          }
+          const channelDetails: DiscordTextChannel = JSON.parse(channelIdxData.toString());
+          fs.readFile(path.join(process.cwd(), "uploads", uploadId, "messages", "c" + id, "messages.json"), (error, messagesData) => {  // FETCH ALL MESSAGES FROM CHANEL
+            if (error) {
+              return reject(error);
+            }
+            const messages: DiscordMessage[] = JSON.parse(messagesData.toString());
+            channels.push({ channel: channelDetails, messages, uploadFolder: uploadId });
+
+            if(channels.length >= Object.keys(channelsMap).length) {
+              channels.sort((a,b) => a.messages.length > b.messages.length ? -1 : 1);
+              return resolve(channels);
+            }
+          });
+        });
+        
+      });
     });
   });
 }

@@ -28,11 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`font-discord antialiased relative bg-cyan-950 text-white min-h-screen `}
+        className={`font-discord antialiased relative bg-cyan-950 text-white min-h-screen`}
       >
         <AppProvider>
           <Loading />
-          {children}
+          <div className="px-8">{children}</div>
         </AppProvider>
       </body>
     </html>

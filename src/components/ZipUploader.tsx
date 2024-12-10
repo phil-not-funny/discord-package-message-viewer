@@ -11,7 +11,7 @@ export interface Props {
 
 const ZipUploader: React.FC<Props> = ({successCallback}) => {
   const [file, setFile] = useState<File | null>(null);
-  const { setLoading } = useContext(AppContext);
+  const { setLoading, setLoadingLabel } = useContext(AppContext);
   const [status, setStatus] = useState<{
     type: "error" | "success";
     message: string;
@@ -32,6 +32,7 @@ const ZipUploader: React.FC<Props> = ({successCallback}) => {
 
     try {
       setLoading(true);
+      setLoadingLabel("Uploading...");
       setStatus({ type: "success", message: "" });
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -100,7 +101,7 @@ const ZipUploader: React.FC<Props> = ({successCallback}) => {
       </h6>
       <button
         type="submit"
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+        className="uppercase mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
       >
         Upload
       </button>

@@ -5,13 +5,13 @@ import { writeFile } from "fs/promises";
 import { BACKEND } from "@/utils/logging";
 import { readUserJson, unzip } from "@/utils/io";
 
-export const POST = async (req: NextRequest, res: NextResponse) => {
+export const POST = async (req: NextRequest) => {
   BACKEND.info("Received a request to upload a file");
 
   const formData = await req.formData();
   const file = formData.get("file");
   if (!file) {
-    return NextResponse.json({ error: "No files received." }, { status: 400 });
+    return NextResponse.json({ error: "No files received.", status: 400 });
   }
 
   const buffer = Buffer.from(await (file as File).arrayBuffer());
