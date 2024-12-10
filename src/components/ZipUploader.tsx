@@ -3,8 +3,13 @@
 import React, { useContext, useState } from "react";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import { AppContext } from "./AppProvider";
+import { FRONTEND } from "@/utils/logging";
 
-const ZipUploader: React.FC = () => {
+export interface Props {
+  successCallback: (user: any) => void;
+}
+
+const ZipUploader: React.FC<Props> = ({successCallback}) => {
   const [file, setFile] = useState<File | null>(null);
   const { setLoading } = useContext(AppContext);
   const [status, setStatus] = useState<{
@@ -36,6 +41,7 @@ const ZipUploader: React.FC = () => {
 
       const data = await response.json();
       if (response.ok) {
+        successCallback(data.data.user);
         setStatus({ type: "success", message: "File uploaded successfully" });
       } else {
         setStatus({

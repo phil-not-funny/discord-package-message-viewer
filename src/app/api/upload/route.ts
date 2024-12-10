@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs, { read } from "fs";
 import { writeFile } from "fs/promises";
-import { BACKEND } from "@/helpers/logging";
-import unzipper from "unzipper";
-import { unzip } from "@/helpers/io";
+import { BACKEND } from "@/utils/logging";
+import { readUserJson, unzip } from "@/utils/io";
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
   BACKEND.info("Received a request to upload a file");
@@ -18,7 +17,7 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
   const buffer = Buffer.from(await (file as File).arrayBuffer());
   const filename = "upload_" + Date.now() + ".zip";
   BACKEND.info(`Writing file: ${filename}...`);
-  const uploadsPath = path.join(process.cwd(), "uploads/");
+  const uploadsPath = path.join(process.cwd(), "uploads");
   const zipFilePath = path.join(uploadsPath, filename);
   const zipFolderPath = path.join(uploadsPath, filename.replace(".zip", ""));
 
@@ -36,10 +35,16 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     BACKEND.info(`Unzipping file ${filename}...`);
     await unzip(zipFilePath, zipFolderPath);
     BACKEND.success(`Unzip success!`);
-    return NextResponse.json({ Message: "Success", status: 201 });
+
+    BACKEND.info(`Reading essential files...`);
+    const user = await readUserJson(path.join(zipFolderPath, "account"), filename.replace(".zip", ""));
+    BACKEND.success(`Operation success!`);
+
+    return NextResponse.json({ Message: "Success", status: 201, data: {user} });
   } catch (error) {
     BACKEND.error(`Failed to write/unzip file:`);
     console.error(error);
+
     return NextResponse.json({ Message: "Failed", status: 500 });
   }
 };

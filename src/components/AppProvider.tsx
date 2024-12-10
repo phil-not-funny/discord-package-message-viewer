@@ -1,8 +1,17 @@
 "use client";
 
+import { BACKEND } from "@/utils/logging";
+import { UploadStatus } from "@/utils/upload_statuses";
 import React, { createContext, useState } from "react";
 
-const AppContext = createContext<any>({} as any);
+interface AppContextProps {
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  loadingLabel: string;
+  setLoadingLabel: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const AppContext = createContext<AppContextProps>({} as any);
 
 const AppProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(false);
